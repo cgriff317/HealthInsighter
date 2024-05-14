@@ -1,41 +1,53 @@
-# data_processor.py
-
 import pandas as pd
-
-
-def preprocess_data(df):
-    # Convert categorical data to ordered categorical types
-    category_columns = {
-        'Asset Wealth': ['Lowest', '2nd', '3rd', 'Highest'],
-        'Self-rated Health': ['Poor', 'Good', 'Very Good', 'Excellent']
-    }
-    for col, categories in category_columns.items():
-        df[col] = pd.Categorical(df[col], categories=categories, ordered=True)
-
-    # Encoding all other categorical columns as category datatypes
-    categorical_cols = df.select_dtypes(include=['object']).columns.difference(category_columns.keys())
-    for col in categorical_cols:
-        df[col] = df[col].astype('category')
-
-    # Ensure there are no NaN values in important columns
-    important_cols = ['Asset Wealth', 'Self-rated Health', 'Disability Level', 'Health Insurance Status', 'Household Type', 'Employment Status']
-    for col in important_cols:
-        if df[col].isnull().any():
-            if df[col].dtype.name == 'category':
-                df[col] = df[col].cat.add_categories(['Unknown'])
-            df[col].fillna('Unknown', inplace=True)  # Fill with a placeholder or a suitable default value
-
-    return df
-
 
 class DataProcessor:
     def __init__(self, file_path):
         self.file_path = file_path
 
     def load_data(self):
-        # Load the data from a local CSV file
-        data = pd.read_csv(self.file_path)
-        return data
+        try:
+            # Load the data from a local CSV file
+            data = pd.read_csv(self.file_path)
+            return data
+        except Exception as e:
+            print(f"Error loading data: {e}")
+            return None
 
     def preprocess_data(self, df):
-        pass
+        if df is None:
+            print("Data is None, cannot preprocess.")
+            return None
+
+        try:
+            # Map ordinal categories to numeric values
+            category_mappings = {
+                'Asset Wealth': {'Lowest': 1, '2nd': 2, '3rd': 3, 'Highest': 4},
+                'Self-rated Health': {'Poor': 1, 'Good': 2, 'Very Good': 3, 'Excellent': 4},
+                'Disability Level': {'Not disabled': 0, 'IADL limitation only': 1, 'ADL limitation only': 2, 'Both IADL and ADL': 3},
+                'Health Insurance Status': {'Not covered': 0, 'Medical card only': 1, 'Health insurance only': 2, 'Dual coverage': 3, 'All medical cards': 4, 'All health insurance': 5},
+                'Education': {'Primary': 1, 'Secondary': 2, 'Tertiary or higher': 3},
+                'Household Type': {'Living alone': 1, 'Living with others': 2, 'Living with spouse': 3},
+                'Employment Status': {'Other': 0, 'Retired': 1, 'Working': 2}
+            }
+
+            for col, mapping in category_mappings.items():
+                df[col] = df[col].map(mapping)
+                print(f"Processed column: {col} with mapping: {mapping}")
+
+            # Encoding all other categorical columns as category datatypes
+            categorical_cols = df.select_dtypes(include=['object']).columns.difference(category_mappings.keys())
+            for col in categorical_cols:
+                df[col] = df[col].astype('category').cat.codes
+                print(f"Encoded column: {col}")
+
+            # Ensure there are no NaN values in important columns
+            important_cols = list(category_mappings.keys()) + list(categorical_cols)
+            for col in important_cols:
+                if df[col].isnull().any():
+                    df[col].fillna(df[col].mode()[0], inplace=True)  # Fill with the mode (most common value)
+                    print(f"Filled NaN values in column: {col}")
+
+            return df
+        except Exception as e:
+            print(f"Error during preprocessing: {e}")
+            return None
