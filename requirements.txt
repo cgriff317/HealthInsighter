@@ -1,3 +1,4 @@
+certifi==2023.11.17
 dash==2.0.0
 dash-bootstrap-components
 flask==2.0.3
