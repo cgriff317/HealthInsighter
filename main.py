@@ -35,11 +35,16 @@ def main():
     correlation = analysis_engine.correlation_matrix()
     print("\nCorrelation Matrix:\n", correlation)
 
-    # Initialize and setup Dashboard
+    # Initialize and run the dashboard
     dashboard = Dashboard(df)
     dashboard.setup_layout()
-    dashboard.app.run_server(debug=True)
+    dashboard.register_callbacks()
+    return dashboard.app
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    app = main()
+    app.run_server(debug=True)
+
+# Expose the server variable for Gunicorn
+server = main().server
