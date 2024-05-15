@@ -3,6 +3,36 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 
 
+def mortality_rate_dashboard():
+    return dbc.Container([
+        dbc.Row([
+            dbc.Col(dcc.Dropdown(
+                id='self-rated-health-dropdown',
+                options=[
+                    {'label': 'Poor', 'value': 1},
+                    {'label': 'Good', 'value': 2},
+                    {'label': 'Very Good', 'value': 3},
+                    {'label': 'Excellent', 'value': 4},
+                ],
+                placeholder="Select Self-rated Health",
+            ), width=6),
+            dbc.Col(dcc.Checklist(
+                id='health-insurance-status-checklist',
+                options=[
+                    {'label': 'Not Covered', 'value': 0},
+                    {'label': 'Medical Card Only', 'value': 1},
+                    {'label': 'Health Insurance Only', 'value': 2},
+                    {'label': 'Dual Coverage', 'value': 3},
+                    {'label': 'All Medical Cards', 'value': 4},
+                    {'label': 'All Health Insurance', 'value': 5},
+                ],
+                value=[0, 1, 2, 3, 4, 5]  # default to show all
+            ), width=6)
+        ]),
+        dbc.Row(dcc.Graph(id='mortality-rate-graph'))
+    ])
+
+
 class Dashboard:
     def __init__(self, dataframe):
         self.data = dataframe
@@ -72,44 +102,15 @@ class Dashboard:
             ]),
             dbc.Tabs([
                 dbc.Tab(self.insurance_distribution_dashboard(), label="Insurance Coverage Distribution"),
-                dbc.Tab(self.mortality_rate_dashboard(), label="Mortality Rate Comparison"),
-                dbc.Tab(self.risk_factors_dashboard(), label="Risk Factors Analysis")
-            ])
+                dbc.Tab(mortality_rate_dashboard(), label="Mortality Rate Comparison"),
+                dbc.Tab(self.risk_factors_dashboard(), label="Risk Factors Analysis"),
+                dbc.Tab(self.predictive_analytics_dashboard(), label="Predictive Analytics"),
+                ])
         ])
 
     def insurance_distribution_dashboard(self):
         fig = px.pie(self.data, names='Health Insurance Status', title='Distribution of Health Insurance Coverage')
         return dcc.Graph(figure=fig)
-
-    def mortality_rate_dashboard(self):
-        return dbc.Container([
-            dbc.Row([
-                dbc.Col(dcc.Dropdown(
-                    id='self-rated-health-dropdown',
-                    options=[
-                        {'label': 'Poor', 'value': 1},
-                        {'label': 'Good', 'value': 2},
-                        {'label': 'Very Good', 'value': 3},
-                        {'label': 'Excellent', 'value': 4},
-                    ],
-                    placeholder="Select Self-rated Health",
-                    multi=True
-                ), width=6),
-                dbc.Col(dcc.Checklist(
-                    id='health-insurance-status-checklist',
-                    options=[
-                        {'label': 'Not Covered', 'value': 0},
-                        {'label': 'Medical Card Only', 'value': 1},
-                        {'label': 'Health Insurance Only', 'value': 2},
-                        {'label': 'Dual Coverage', 'value': 3},
-                        {'label': 'All Medical Cards', 'value': 4},
-                        {'label': 'All Health Insurance', 'value': 5},
-                    ],
-                    value=[0, 1, 2, 3, 4, 5]  # default to show all
-                ), width=6)
-            ]),
-            dbc.Row(dcc.Graph(id='mortality-rate-graph'))
-        ])
 
     def risk_factors_dashboard(self):
         fig = px.scatter(self.data, x='Disability Level', y='Self-rated Health', size='Asset Wealth',
@@ -132,7 +133,7 @@ class Dashboard:
         def update_mortality_rate_graph(selected_health, selected_insurance):
             filtered_data = self.data
             if selected_health:
-                filtered_data = filtered_data[filtered_data['Self-rated Health'].isin(selected_health)]
+                filtered_data = filtered_data[filtered_data['Self-rated Health'] == selected_health]
             if selected_insurance:
                 filtered_data = filtered_data[filtered_data['Health Insurance Status'].isin(selected_insurance)]
             if filtered_data.empty:
@@ -142,6 +143,8 @@ class Dashboard:
                         'title': 'No data available for the selected filters.'
                     }
                 }
-            fig = px.scatter(filtered_data, x='Age', y='Self-rated Health', color='Health Insurance Status',
-                             title='Health Outcomes by Insurance Status')
+            fig = px.line(filtered_data, x='Age', y='Self-rated Health', color='Health Insurance Status',
+                          title='Health Outcomes by Insurance Status',
+                          facet_col='Health Insurance Status', facet_col_wrap=3)  # Use facets for better comparison
+            fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))  # Clean up facet labels
             return fig
