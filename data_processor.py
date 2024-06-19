@@ -23,10 +23,10 @@ class DataProcessor:
             category_mappings = {
                 'Asset Wealth': {'Lowest': 1, '2nd': 2, '3rd': 3, 'Highest': 4},
                 'Self-rated Health': {'Poor': 1, 'Good': 2, 'Very Good': 3, 'Excellent': 4},
-                'Disability Level': {'Not disabled': 0, 'IADL limitation only': 1, 'ADL limitation only': 2, 'Both IADL and ADL': 3},
-                'Health Insurance Status': {'Not covered': 0, 'Medical card only': 1, 'Health insurance only': 2, 'Dual coverage': 3, 'All medical cards': 4, 'All health insurance': 5},
+                'Disability Level': {'Not Disabled': 0, 'IADL Limitation Only': 1, 'ADL Limitation Only': 2, 'Both IADL and ADL': 3},
+                'Health Insurance Status': {'Not Covered': 0, 'Medical Cards': 1, 'Health Insurance': 2, 'Dual Coverage': 3},
                 'Education': {'Primary': 1, 'Secondary': 2, 'Tertiary or higher': 3},
-                'Household Type': {'Living alone': 1, 'Living with others': 2, 'Living with spouse': 3},
+                'Household Type': {'Living Alone': 1, 'Living with Others': 2, 'Living with Spouse': 3},
                 'Employment Status': {'Other': 0, 'Retired': 1, 'Working': 2}
             }
 

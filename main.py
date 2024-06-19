@@ -12,13 +12,13 @@ def main():
 
     if df is None:
         print("Failed to load data. Exiting...")
-        return
+        return None
 
     df = data_processor.preprocess_data(df)
 
     if df is None:
         print("Failed to preprocess data. Exiting...")
-        return
+        return None
 
     # Verify the data
     print("Data Types:\n", df.dtypes)
@@ -38,13 +38,15 @@ def main():
     # Initialize and run the dashboard
     dashboard = Dashboard(df)
     dashboard.setup_layout()
-    dashboard.register_callbacks()
     return dashboard.app
 
 
 if __name__ == "__main__":
     app = main()
-    app.run_server(debug=True)
+    if app:
+        app.run_server(debug=True)
 
 # Expose the server variable for Gunicorn
-server = main().server
+server = main()
+if server:
+    server = server.server
