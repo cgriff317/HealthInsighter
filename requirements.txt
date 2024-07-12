@@ -3,7 +3,8 @@ dash==2.0.0
 dash-bootstrap-components
 flask==2.0.3
 gunicorn
-pandas
-plotly
+pandas~=2.2.2
+plotly~=5.14.1
 flask-compress
 werkzeug==2.0.3
+pytest~=8.2.2

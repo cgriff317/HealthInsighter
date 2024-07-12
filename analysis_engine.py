@@ -17,3 +17,4 @@ class AnalysisEngine:
         numeric_df = self.df.select_dtypes(include=['number'])
         correlation = numeric_df.corr()
         return correlation
+
